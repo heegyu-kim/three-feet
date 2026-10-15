@@ -1,0 +1,679 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Never Practice at Three Feet</title>
+<meta name="description" content="In 1978, children who never practiced at three feet hit the three-foot target better. Six sections and a throwing lab ask what architecture education fails to learn when it only practices at the target.">
+<meta name="color-scheme" content="dark">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500&family=Geist+Mono:wght@400;500&display=swap">
+<style>
+/* A ledger on a dark ground. Left, the argument. Right, the margin that keeps the sources and the numbers.
+   A fixed bar tracks the hand you chose and how many throws are left. While you hold, the ground goes to black. One theme only. */
+:root{
+  --bg:#111111;
+  --fg:#ededed;
+  --text:#c9c9c9;
+  --mute:#8a8a8a;
+  --dim:#5c5c5c;
+  --rule:#262626;
+  --panel:#171717;
+  --model:#737373;
+  --sans:"Geist",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;
+  --mono:"Geist Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --gutter:clamp(20px,5vw,72px);
+  --bar-h:80px;
+  color-scheme:dark;
+}
+/* eyes closed */
+:root.inside{--bg:#070707;--rule:#1e1e1e;--panel:#0e0e0e}
+
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;background:var(--bg);scroll-behavior:smooth}
+body{
+  margin:0;background:var(--bg);color:var(--text);
+  font-family:var(--mono);font-size:15px;line-height:1.6;font-weight:400;
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+  transition:background-color 1.4s ease;
+}
+.bar,.lab{transition:background-color 1.4s ease,border-color 1.4s ease}
+a{color:inherit;text-decoration:none;border-bottom:1px solid var(--rule)}
+a:hover{border-bottom-color:var(--fg)}
+h1,h2{margin:0;font-weight:400;text-wrap:balance}
+p{margin:0}
+i{font-style:italic}
+.tab{font-variant-numeric:tabular-nums}
+.wrap{padding-inline:var(--gutter);max-width:1360px;margin-inline:auto}
+.hi{color:var(--fg)}
+.hidden{display:none!important}
+
+/* buttons */
+.btn{
+  font-family:var(--mono);font-size:14px;font-weight:500;letter-spacing:.02em;line-height:1;
+  background:var(--fg);color:#0a0a0a;border:1px solid var(--fg);
+  padding:12px 22px;border-radius:0;cursor:pointer;white-space:nowrap;
+  transition:background-color .2s ease,color .2s ease,transform .1s ease,opacity .3s ease;
+}
+.btn:hover{background:#ffffff}
+.btn:active{transform:translateY(1px)}
+.btn:focus-visible{outline:2px solid var(--fg);outline-offset:3px}
+.btn[aria-pressed="true"],.btn.on{background:transparent;color:var(--fg)}
+.btn[aria-pressed="true"]:hover,.btn.on:hover{background:rgba(237,237,237,.08)}
+.btn.ghost{background:transparent;color:var(--text);border-color:var(--rule)}
+.btn.ghost:hover{background:transparent;color:var(--fg);border-color:var(--fg)}
+.btn:disabled{opacity:.3;cursor:default}
+
+/* fixed bar */
+.bar{position:sticky;top:0;z-index:10;background:var(--bg);border-bottom:1px solid var(--rule);min-height:var(--bar-h);display:flex;align-items:center}
+.bar .wrap{width:100%;display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:12px 32px;align-items:center;min-height:var(--bar-h)}
+.bar .name{font-family:var(--mono);font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--fg);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar .mid{display:flex;align-items:center;gap:32px;justify-content:center}
+.read{display:grid;grid-template-columns:auto auto;gap:0 14px;align-items:baseline;font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);white-space:nowrap}
+.read b{font-weight:500;color:var(--fg);font-variant-numeric:tabular-nums;text-transform:none;letter-spacing:.02em}
+.read.m b{color:var(--model)}
+.read.hand b{text-transform:capitalize}
+.bar .dist{font-family:var(--mono);font-size:13px;letter-spacing:.06em;color:var(--mute);white-space:nowrap;display:flex;gap:12px;align-items:baseline;min-width:0}
+.bar .dist b{font-weight:500;color:var(--fg)}
+.bar .dist span{overflow:hidden;text-overflow:ellipsis}
+.bar .right{display:flex;align-items:center;justify-content:flex-end;gap:20px;min-width:0}
+.bar .btn{font-size:14px;padding:10px 18px}
+.bar.athero .btn{opacity:0;pointer-events:none}
+@media (max-width:1200px){
+  .bar .name{font-size:12px}
+  .bar .dist span{display:none}
+}
+@media (max-width:900px){
+  .bar .dist{display:none}
+  .bar .mid{gap:20px}
+}
+@media (max-width:640px){
+  .bar{min-height:0}
+  .bar .wrap{min-height:0;grid-template-columns:1fr auto;grid-template-areas:"name right" "mid mid";gap:8px 16px;padding-block:10px}
+  .bar .name{grid-area:name;font-size:11px;line-height:1.3}
+  .bar .right{grid-area:right}
+  .bar .btn{font-size:13px;padding:8px 14px}
+  .bar .mid{grid-area:mid;display:grid;grid-template-columns:repeat(3,auto);justify-content:start;gap:16px}
+  .read{font-size:11px;line-height:1.3;gap:0 8px}
+}
+
+/* hero */
+.hero{padding-block:clamp(40px,6vh,64px) clamp(32px,5vh,48px);display:grid;gap:28px}
+.hero .top{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:24px 40px;align-items:start}
+.hero h1{font-family:var(--mono);font-size:clamp(30px,4.4vw,60px);line-height:1.15;letter-spacing:-.01em;color:var(--mute);max-width:22ch}
+.hero .btn{margin-top:.35em}
+.hero .lede{font-size:clamp(15px,1.15vw,17px);line-height:1.6;max-width:66ch;color:var(--text)}
+/* same 7:4 grid as the ledger below, so the right column sits over the margin */
+.how{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,4fr);gap:24px clamp(32px,5vw,88px);border-top:1px solid var(--rule);padding-top:18px}
+.how .b p{max-width:62ch}
+.how b{display:block;font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:400;margin-bottom:10px}
+.how .b b{color:var(--fg)}.how .m b{color:var(--model)}
+.how p{font-size:12.5px;line-height:1.65;color:var(--mute)}
+
+/* stages, one per section */
+.stage{border-top:1px solid var(--rule);padding-block:clamp(32px,5vh,48px) clamp(36px,6vh,56px);scroll-margin-top:var(--bar-h)}
+.stage .head{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 28px;margin-bottom:clamp(18px,3vh,28px)}
+.stage .d{font-family:var(--mono);font-size:clamp(48px,6vw,88px);line-height:.95;letter-spacing:-.04em;color:var(--fg)}
+.stage h2{font-family:var(--mono);font-size:clamp(22px,2.6vw,36px);line-height:1.15;letter-spacing:-.01em;color:var(--mute);max-width:24ch;padding-bottom:6px}
+.ledger{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,4fr);gap:28px clamp(32px,5vw,88px);align-items:start}
+.txt{display:grid;gap:1.1em;max-width:66ch;font-size:clamp(15px,1.15vw,17px);line-height:1.6;color:var(--text)}
+.txt .small{font-size:12px;line-height:1.7;color:var(--mute)}
+.ask{margin-top:1.4em;font-family:var(--mono);font-size:clamp(22px,2.8vw,38px);line-height:1.3;color:var(--mute);max-width:30ch;text-wrap:balance}
+.col-m{font-family:var(--mono);font-size:12px;line-height:1.65;color:var(--mute);display:grid;gap:14px;align-content:start}
+.col-m .fl{font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--dim)}
+.meta{display:grid;grid-template-columns:7em minmax(0,1fr);gap:8px 14px;align-items:baseline;max-width:480px}
+.meta .k{color:var(--dim);letter-spacing:.1em;text-transform:uppercase;font-size:10.5px;padding-top:2px}
+.meta .v{color:var(--mute);min-width:0}
+.meta .cap{color:var(--fg)}
+.meta .ch{display:flex;flex-wrap:wrap;gap:2px 12px}
+.meta .ch .off{color:var(--dim);text-decoration:line-through;text-decoration-color:var(--rule)}
+.meta .ch .on{color:var(--fg)}
+.meta .vnote{display:block;color:var(--dim);margin-top:4px}
+
+/* 2x2 matrix */
+table.grid{border-collapse:collapse;width:100%;max-width:66ch;font-family:var(--mono);font-size:12px;line-height:1.5;margin:.4em 0 0}
+table.grid th,table.grid td{border:1px solid var(--rule);padding:12px 14px;text-align:left;vertical-align:top}
+table.grid th{color:var(--dim);font-weight:400;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase}
+table.grid td{color:var(--text);cursor:default;transition:background-color .15s ease}
+table.grid td.gen{color:var(--mute)}
+table.grid td:hover{background:var(--panel)}
+table.grid td.you{background:var(--fg);color:#0a0a0a}
+table.grid td.you::after{content:"you were here";display:block;font-size:10px;letter-spacing:.1em;text-transform:uppercase;margin-top:6px;color:#0a0a0a}
+.studio{font-family:var(--mono);font-size:12px;line-height:1.65;color:var(--mute);min-height:3.3em;max-width:66ch}
+.studio b{color:var(--fg);font-weight:500}
+
+/* throw lab */
+.lab{margin-top:clamp(24px,4vh,40px);border:1px solid var(--rule);background:var(--panel);font-family:var(--mono);font-size:12.5px;color:var(--mute);user-select:none;-webkit-user-select:none}
+.lab-top{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:14px 20px;border-bottom:1px solid var(--rule);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+.lab-top b{color:var(--fg);font-weight:400}
+.modes{display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid var(--rule)}
+.mode{font:inherit;text-align:left;background:transparent;color:var(--text);border:0;border-right:1px solid var(--rule);padding:18px 20px 16px;cursor:pointer;border-radius:0;display:grid;gap:6px;min-height:150px;align-content:start;transition:background-color .2s ease,color .2s ease}
+.mode:last-child{border-right:0}
+.mode .nm{font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--dim)}
+.mode .big{font-size:40px;line-height:1;letter-spacing:-.03em;color:var(--fg);font-weight:400;margin:6px 0 4px}
+.mode .ds{font-size:12px;color:var(--mute);line-height:1.5}
+.mode:hover{background:rgba(237,237,237,.05)}
+.mode:focus-visible{outline:2px solid var(--fg);outline-offset:-2px}
+.mode[aria-pressed="true"]{background:var(--fg);color:#0a0a0a}
+.mode[aria-pressed="true"] .nm,.mode[aria-pressed="true"] .big,.mode[aria-pressed="true"] .ds{color:#0a0a0a}
+.mode:disabled{cursor:default}
+.mode:disabled:not([aria-pressed="true"]){opacity:.3}
+.toolbar{display:flex;justify-content:space-between;gap:12px;padding:12px 20px;border-bottom:1px solid var(--rule);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--mute)}
+.toolbar b{color:var(--fg);font-weight:400}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);padding:12px 20px 0;gap:12px;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
+.steps div{border-top:1px solid var(--rule);padding-top:6px;transition:color .2s ease,border-color .2s ease}
+.steps div.on{color:var(--fg);border-top-color:var(--fg)}
+.lanewrap{position:relative;padding:16px 20px 8px}
+.ruler{display:flex;justify-content:space-between;color:var(--dim);font-size:11px;padding:0 0 10px;font-variant-numeric:tabular-nums}
+.lane{position:relative;height:96px;margin:0 0 6px;background:repeating-linear-gradient(90deg,var(--rule),var(--rule) 1px,transparent 1px,transparent calc(100%/6))}
+.lane .line{position:absolute;left:0;right:0;top:48px;height:1px;background:var(--rule)}
+.peg{position:absolute;top:42px;left:0;width:12px;height:12px;background:var(--mute);border-radius:50%;transform:translateX(-50%)}
+.peg span{position:absolute;left:-6px;top:16px;font-size:9px;letter-spacing:.12em;color:var(--dim)}
+.target{position:absolute;top:24px;left:50%;width:48px;height:48px;border:1px solid var(--fg);border-radius:50%;transform:translateX(-50%);transition:left .3s cubic-bezier(.16,1,.3,1)}
+.target::after{content:"";position:absolute;left:50%;top:50%;width:4px;height:4px;background:var(--fg);border-radius:50%;transform:translate(-50%,-50%)}
+.target span{position:absolute;left:50%;top:54px;transform:translateX(-50%);font-size:11px;color:var(--fg);white-space:nowrap}
+.bean{position:absolute;top:38px;left:0;width:20px;height:20px;background:var(--fg);border-radius:50%;transform:translateX(-50%);display:none;z-index:2}
+.bean.ghost{background:transparent;border:1px solid var(--mute)}
+.ring{position:absolute;top:48px;left:0;width:0;height:0;border:1px solid var(--model);border-radius:50%;transform:translate(-50%,-50%);opacity:0;pointer-events:none}
+.ring.go{animation:ring .9s ease-out forwards}
+@keyframes ring{0%{width:0;height:0;opacity:1}100%{width:160px;height:160px;opacity:0}}
+.mask{position:absolute;inset:0;background:var(--bg);display:none;align-items:center;justify-content:center;flex-direction:column;gap:8px;z-index:4;color:var(--dim);font-size:11px;letter-spacing:.16em;text-transform:uppercase}
+.mask.on{display:flex}
+.mask .eye{font-size:34px;line-height:1;color:var(--rule);letter-spacing:0}
+.mask .sub{color:var(--rule)}
+.feedback{min-height:52px;padding:14px 20px;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);font-size:12.5px;color:var(--mute);line-height:1.6}
+.feedback b{color:var(--fg);font-weight:500}
+.controls{display:flex;gap:10px;padding:16px 20px;flex-wrap:wrap}
+.controls .btn{min-height:44px;touch-action:none}
+.btn.hold{min-width:260px}
+.record{padding:16px 20px 20px;border-top:1px solid var(--rule)}
+.record h4{margin:0 0 10px;font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);font-weight:400}
+.record h4 b{color:var(--fg);font-weight:400}
+.record p{font-size:12px;color:var(--mute);margin:10px 0 0;max-width:none}
+.cells{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:4px}
+.cell{border:1px solid var(--rule);padding:7px 2px;text-align:center;font-size:10px;line-height:1.4;color:var(--mute);font-variant-numeric:tabular-nums}
+.cell b{display:block;font-weight:500;font-size:12px;color:var(--text)}
+.cell.hit{background:var(--fg);color:#0a0a0a}
+.cell.hit b{color:#0a0a0a}
+.cell.auto{border-style:dashed}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 16px}
+.stat{border:1px solid var(--rule);padding:16px;text-align:center}
+.stat b{display:block;font-size:30px;line-height:1.2;letter-spacing:-.02em;color:var(--fg);font-weight:400}
+.stat span{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);margin-top:4px}
+.lab .note{font-size:11px;line-height:1.7;color:var(--dim);padding:0 20px 18px}
+.after{margin-top:clamp(28px,4vh,40px)}
+.after p:first-child{font-size:clamp(18px,1.6vw,22px);color:var(--fg)}
+
+/* footer, four columns */
+.foot{border-top:1px solid var(--rule);padding-block:clamp(36px,5vh,56px) 0}
+.cols{display:flex;justify-content:space-between;align-items:start;gap:40px}
+.cols > div{flex:0 1 auto;max-width:27em}
+.cols .fl{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);margin-bottom:16px}
+.cols ul{list-style:none;margin:0;padding:0;display:grid;gap:10px;font-size:12.5px;line-height:1.5;color:var(--text)}
+.cols li span{display:block;color:var(--dim);font-size:11.5px;margin-top:2px}
+.legal{border-top:1px solid var(--rule);margin-top:clamp(36px,5vh,56px);padding-block:20px 40px;font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);display:flex;flex-wrap:wrap;gap:8px 40px;justify-content:space-between}
+
+@media (max-width:900px){
+  .ledger{grid-template-columns:1fr}
+  .col-m{border-top:1px solid var(--rule);padding-top:20px}
+  .cols{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:32px}
+  .cols > div{max-width:none}
+}
+@media (max-width:640px){
+  body{font-size:14px}
+  .hero .top{grid-template-columns:1fr}
+  .hero .btn{margin-top:0;justify-self:start}
+  .how{grid-template-columns:1fr}
+  .cols{grid-template-columns:1fr}
+  .stage .d{font-size:clamp(44px,14vw,64px)}
+  .modes{grid-template-columns:1fr}
+  .mode{border-right:0;border-bottom:1px solid var(--rule);min-height:0;grid-template-columns:1fr auto;align-items:center}
+  .mode .big{grid-row:1/span 2;grid-column:2;font-size:30px;margin:0}
+  .mode:last-child{border-bottom:0}
+  .cells{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .stats{grid-template-columns:1fr}
+  .btn.hold{min-width:0;width:100%}
+  table.grid th,table.grid td{padding:9px 8px}
+}
+@media (prefers-reduced-motion: reduce){
+  body,.bar,.lab,.btn,.mode,.target,.steps div{transition:none}
+  .ring.go{animation:none}
+}
+</style>
+</head>
+<body>
+
+<header class="bar" id="strip">
+  <div class="wrap">
+    <div class="name">Never Practice at Three Feet</div>
+    <div class="mid" aria-label="The hand you chose and the throws left">
+      <div class="read hand"><span>Hand</span><b id="bar-hand">—</b></div>
+      <div class="read"><span>Practice</span><b id="bar-prac" class="tab">0 / 8</b></div>
+      <div class="read m"><span>Test</span><b id="bar-test" class="tab">0 / 5</b></div>
+    </div>
+    <div class="right">
+      <div class="dist tab"><b>Artifact 05</b><span>Harvard GSD, ADV 9672</span></div>
+      <button class="btn" id="bar-throw" type="button">Throw</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+<section class="hero">
+  <div class="top">
+    <h1>Never practice <span class="hi">at three feet.</span></h1>
+    <button class="btn" id="hero-throw" type="button">Throw</button>
+  </div>
+  <p class="lede">In 1978, Kerr and Booth asked children to throw beanbags at a target three feet away. One group practiced only at three feet. The other practiced only at two feet and four feet, and never at three. After twelve weeks, the children who had never thrown at three feet hit the target better. This page takes that result as a question, not a fact. If we only practice at the target, what do we fail to learn? Scroll down to read, and throw when you reach the lab.</p>
+  <div class="how">
+    <div class="b"><b>Left column, the argument</b><p>Six short sections. Each has a number, a text, and a margin. The second section is a throwing lab. Choose one way to practice, throw eight times, then take the test at three feet. The bar above keeps count. While you hold, the page goes dark, the way the children could not see the target or their own hand.</p></div>
+    <div class="m"><b>Right column, the margin</b><p>The sources and the numbers. Kerr and Booth on specific and varied practice. Sennett on resistance. Pye on the workmanship of risk and of certainty. The margin keeps what the text leans on, so the text can stay short.</p></div>
+  </div>
+</section>
+
+<!-- 1 -->
+<section class="stage" id="s1">
+  <div class="head"><span class="d tab">01</span><h2>Never Practice <span class="hi">at Three Feet</span></h2></div>
+  <div class="ledger">
+    <div class="col-b txt">
+      <p>In 1978, Kerr and Booth asked children to throw beanbags. For the eight year olds, the target was three feet away. One group practiced only at three feet. The other group practiced only at two feet and four feet. They never threw at three feet. After twelve weeks, both groups were tested at three feet.</p>
+      <p><span class="hi">The children who had never thrown at three feet hit the target better.</span></p>
+      <p>I do not want to push this result too far. The study had 64 children and a twelve week gym program. When a similar test was done with adults, the effect was small and did not last.</p>
+      <p>So the title of this page is not a fact. It is a question. If we only practice at the target, what do we fail to learn?</p>
+    </div>
+    <div class="col-m">
+      <div class="fl">The study</div>
+      <div class="meta">
+        <span class="k">source</span><span class="v cap">Kerr and Booth, 1978. Specific and varied practice of motor skill.</span>
+        <span class="k">children</span><span class="v">64, in a twelve week gym program.</span>
+        <span class="k">specific</span><span class="v">Practice only at three feet.</span>
+        <span class="k">varied</span><span class="v">Practice only at two feet and four feet. Never at three.</span>
+        <span class="k">test</span><span class="v">Both groups, at three feet.</span>
+        <span class="k">result</span><span class="v cap">Varied hit the target better.</span>
+        <span class="k">adults</span><span class="v">Willey and Liu, 2018. A small effect that did not last.<span class="vnote">This is why the title is a question.</span></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 2 -->
+<section class="stage" id="s2">
+  <div class="head"><span class="d tab">02</span><h2><span class="hi">Throw</span></h2></div>
+  <div class="ledger">
+    <div class="col-b txt">
+      <p>Choose one way to practice. Then take the test at three feet.</p>
+      <p>In the original study, the children could not see the target or their own hand while they threw. They saw the result only after. The same here. You check the distance first. While you hold and release, nothing is shown. Then you see where it landed.</p>
+      <p><span class="hi">Specific.</span> Throw eight times at three feet, by hand. <span class="hi">Varied.</span> Throw eight times by hand, switching between two feet and four feet. <span class="hi">Generate.</span> Press a button and the beanbag lands at three feet. You do not throw. Eight times.</p>
+    </div>
+    <div class="col-m">
+      <div class="fl">The lab</div>
+      <div class="meta">
+        <span class="k">practice</span><span class="v">8 throws. The original had 16 per session, over twelve weeks.</span>
+        <span class="k">test</span><span class="v">5 throws at three feet, by hand. The original had 8.</span>
+        <span class="k">force</span><span class="v">Simplified to how long you hold. About half a second per foot.</span>
+        <span class="k">hit</span><span class="v">Within a quarter foot of the target.</span>
+        <span class="k">shown</span><span class="v"><span class="ch"><span class="on">distance, before</span><span class="on">result, after</span><span class="off">target, during</span><span class="off">hand, during</span></span></span>
+        <span class="k">bias</span><span class="v cap">Nothing in the code favors one hand over another.</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="lab" id="lab">
+    <div class="lab-top"><span>Interactive &nbsp;·&nbsp; <b>Throwing study</b></span><span>A rehearsal, not a replication</span></div>
+
+    <div class="modes" id="modes" role="group" aria-label="Choose a hand">
+      <button class="mode" type="button" data-mode="specific" aria-pressed="false"><span class="nm">Specific</span><span class="big tab">3′</span><span class="ds">Eight throws by hand, always at three feet.</span></button>
+      <button class="mode" type="button" data-mode="varied" aria-pressed="false"><span class="nm">Varied</span><span class="big tab">2′ / 4′</span><span class="ds">Eight throws by hand, switching between two and four feet.</span></button>
+      <button class="mode" type="button" data-mode="generate" aria-pressed="false"><span class="nm">Generate</span><span class="big">↗</span><span class="ds">Eight perfect landings at three feet. You do not throw.</span></button>
+    </div>
+
+    <div class="toolbar"><span id="phase">Choose a hand</span><span id="counter"></span></div>
+    <div class="steps" id="steps">
+      <div data-step="observe">01 Observe</div>
+      <div data-step="throw">02 Throw</div>
+      <div data-step="reflect">03 Reflect</div>
+    </div>
+
+    <div class="lanewrap">
+      <div class="ruler"><span>0′</span><span>1′</span><span>2′</span><span>3′</span><span>4′</span><span>5′</span><span>6′</span></div>
+      <div class="lane" id="lane" aria-label="Throwing lane, zero to six feet">
+        <div class="line"></div>
+        <div class="peg"><span>START</span></div>
+        <div class="target" id="target"><span id="tlabel" class="tab">3′</span></div>
+        <div class="ring" id="ring"></div>
+        <div class="bean" id="bean"></div>
+      </div>
+      <div class="mask" id="mask"><div class="eye">◌</div><span>Eyes closed</span><span class="sub">Release to throw</span></div>
+    </div>
+
+    <div class="feedback" id="feedback">Pick Specific, Varied, or Generate.</div>
+
+    <div class="controls">
+      <button class="btn hidden" id="startbtn" type="button">Start practice</button>
+      <button class="btn hold hidden" id="holdbtn" type="button">Hold, then release</button>
+      <button class="btn hidden" id="genbtn" type="button">Generate</button>
+      <button class="btn hidden" id="testbtn" type="button">Start the test at three feet</button>
+      <button class="btn ghost hidden" id="resetbtn" type="button">Try another hand</button>
+    </div>
+
+    <div class="record" id="record"><h4>Record</h4><p>Each throw leaves its target, where it landed, and how much it missed.</p></div>
+
+    <div class="note">Original study. 16 practice throws and 8 test throws per session, over twelve weeks. Here. 8 practice throws and 5 test throws, in a few minutes. Force is simplified to how long you hold. A hit lands within a quarter foot of the target. Nothing in the code favors one hand over another.</div>
+  </div>
+
+  <div class="after txt hidden" id="after">
+    <p>This is not the experiment.</p>
+    <p>Your result may not match the paper. This page was not made to show you the right answer.</p>
+    <p>You just used one of three hands. A hand that repeats one condition. A hand that adjusts every time the condition changes. And a hand that does not throw.</p>
+    <p>The third hand was not in the original experiment. It is here because it is the hand on the architect's desk right now.</p>
+    <p>Still, this page takes a side. Because the paper does. Varied did better. Not because Specific is bad. Specific still throws. It still judges while throwing. It just never practiced adjusting when the condition changes.</p>
+    <p>Put the three hands in a row and it looks like this. A hand whose difficulty was designed. A hand whose difficulty was left alone. A hand whose difficulty was removed.</p>
+    <p>If your result does not follow this order, this page still believes the order.</p>
+    <p class="small">Not reproduced here. Twelve weeks. 64 children. Tests before and after. Transfer tests at new distances. A real beanbag in a real hand.</p>
+  </div>
+</section>
+
+<!-- 3 -->
+<section class="stage" id="s3">
+  <div class="head"><span class="d tab">03</span><h2>Don't Try to Hit <span class="hi">the Target</span></h2></div>
+  <div class="ledger">
+    <div class="col-b txt">
+      <p>Richard Sennett opens chapter eight of <i>The Craftsman</i> with archery. The teacher says to the student, do not try to hit the target. Wanting to hit it stops you from feeling the resistance. The resistance of the bow, of the arm, of your own habit.</p>
+      <p>For Sennett, skill is not removing resistance. It is working with it. He calls making things difficult on purpose a skill. The two feet and four feet in the experiment are that.</p>
+      <p>But not every difficulty teaches. Sennett writes that resistance which is too big, lasts too long, or cannot be explored makes people give up.</p>
+      <p>A difficulty that teaches has conditions. It is hard, but you can explore it. When you fail, information is left behind. On the next try, you can correct your judgment.</p>
+      <p>If varied practice teaches, this is why. Two feet and four feet surround three feet. The miss is visible. The next throw is always there.</p>
+    </div>
+    <div class="col-m">
+      <div class="fl">The source</div>
+      <div class="meta">
+        <span class="k">source</span><span class="v cap">Sennett, 2008. The Craftsman, chapter 8, Resistance and Ambiguity.</span>
+        <span class="k">opening</span><span class="v">Archery. Do not try to hit the target.</span>
+        <span class="k">skill</span><span class="v">Not removing resistance. Working with it. Making things difficult on purpose.</span>
+        <span class="k">gives up</span><span class="v">Resistance that is too big, lasts too long, or cannot be explored.</span>
+        <span class="k">teaches</span><span class="v cap">Hard, but explorable. A miss that leaves information. A next throw.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 4 -->
+<section class="stage" id="s4">
+  <div class="head"><span class="d tab">04</span><h2>Where Does <span class="hi">Judgment</span> Happen</h2></div>
+  <div class="ledger">
+    <div class="col-b txt">
+      <p>Here, two questions need to be kept apart.</p>
+      <p>Kerr and Booth ask this. In how many conditions do you practice. One distance, or several. David Pye asks something different. While you are making it, can your hand still change the result. Or was the result fixed before you started. He calls the first the workmanship of risk. He calls the second the workmanship of certainty.</p>
+      <p>Put the two questions together and you get four boxes.</p>
+      <table class="grid" id="matrix">
+        <thead><tr><th></th><th>One condition</th><th>Several conditions</th></tr></thead>
+        <tbody>
+          <tr><th>The hand changes the result<br>(Risk)</th>
+            <td data-cell="specific" data-studio="In the studio. One site, one brief, a model built by hand. The hand decides, but the conditions never move.">Throw by hand at three feet</td>
+            <td data-cell="varied" data-studio="In the studio. The same room at 1.8 m and at 6 m. The same window facing east and west. A parametric study where the student sets the parameters and reads the results.">Throw by hand at two feet and four feet</td></tr>
+          <tr><th>The result is fixed in advance<br>(Certainty)</th>
+            <td class="gen" data-cell="generate" data-studio="In the studio. One prompt, one render, ten times. The image arrives finished. No judgment happens between the prompt and the picture.">Lands at three feet automatically</td>
+            <td class="gen" data-cell="generate2" data-studio="In the studio. Ten sites, ten briefs, and an AI image for each. The conditions vary. The judgment does not.">Lands automatically even when the target moves</td></tr>
+        </tbody>
+      </table>
+      <p class="studio" id="studio">Hover a box to see what it looks like in a design studio.</p>
+      <p>Specific and Varied both throw by hand. Both are Risk in Pye's sense. So the difference between them is not whether judgment is there. It is whether the conditions were designed so that judgment could grow. Only Generate is Certainty. The hand does nothing.</p>
+      <p>And there is a fourth box. Change the conditions as much as you like. If the result arrives automatically, no judgment grows. Give a student ten sites and ten briefs. If the student generates an image every time, that is not Varied. That is Generate.</p>
+      <p>Architecture education is facing both questions at once. A teacher can vary the conditions. Whether judgment stays in the work is decided first by the tool. That is why the second question is more urgent.</p>
+    </div>
+    <div class="col-m">
+      <div class="fl">Two questions</div>
+      <div class="meta">
+        <span class="k">kerr, booth</span><span class="v">In how many conditions do you practice. One, or several.</span>
+        <span class="k">pye</span><span class="v cap">Pye, 1968. The Nature and Art of Workmanship, chapters 4 to 8.</span>
+        <span class="k">risk</span><span class="v">While you are making it, the hand can still change the result.</span>
+        <span class="k">certainty</span><span class="v">The result was fixed before you started.</span>
+        <span class="k">specific</span><span class="v"><span class="ch"><span class="on">risk</span><span class="on">one condition</span></span></span>
+        <span class="k">varied</span><span class="v"><span class="ch"><span class="on">risk</span><span class="on">several conditions</span></span></span>
+        <span class="k">generate</span><span class="v"><span class="ch"><span class="off">risk</span><span class="on">certainty</span></span><span class="vnote">The hand does nothing, however many conditions there are.</span></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 5 -->
+<section class="stage" id="s5">
+  <div class="head"><span class="d tab">05</span><h2>The Architect's <span class="hi">Three Feet</span></h2></div>
+  <div class="ledger">
+    <div class="col-b txt">
+      <p>What is three feet for an architect. For me, in a wide sense, it is space as the body experiences it. But that is too wide to be a target.</p>
+      <p>Narrowed down, it is this. The ability to predict and adjust the relation between the physical conditions of a space and how a person senses them. How the height of a step meets the leg. How the height of a ceiling changes a voice. How the position of a window changes the temperature of an afternoon.</p>
+      <p>The architect does not shape the finished building by hand. The architect throws a prediction, through drawings and models, toward a sense that does not exist yet. The beanbag lands years later, in someone else's body. So for the architect, the throw is hard to practice from the start.</p>
+      <p>Here we need to be careful. This page does not say do not practice at the target. It says do not practice only in the same condition as the target. Architects need to go to buildings. But if we design only from spaces we already know, senses we are used to, and a body that is always the same, the judgment that adjusts when conditions change does not grow.</p>
+      <p>Two and four feet for an architect might look like this. Instead of memorizing a standard ceiling height, or generating a beautiful ceiling with AI, a student works at both ends. A ceiling at 1.8 meters, where the breath gets short. A ceiling at 6 meters, where the voice scatters. Three feet, the ceiling the body wants, is never given. It is found between the two.</p>
+      <p>Then how should we look at the tools. There was a time when architecture professors criticized students for using CAD and rendering instead of drawing by hand. 3D modeling and rendering are not bad because they are digital. You can change the angle of light, the material, the ceiling height, and study the relation. That is Varied. Digital tools become Generate when they are used to drop the result in front of you.</p>
+      <p>AI images are faster. So the question is more urgent too. When the result is made for you, what judgment is left for the learner.</p>
+      <p><span class="hi">The question is not what the tool is. It is what decisions the student has to make while using it.</span></p>
+    </div>
+    <div class="col-m">
+      <div class="fl">Two and four feet, for an architect</div>
+      <div class="meta">
+        <span class="k">three feet</span><span class="v cap">The relation between the physical conditions of a space and how a person senses them.</span>
+        <span class="k">the throw</span><span class="v">A prediction, through drawings and models, toward a sense that does not exist yet.</span>
+        <span class="k">lands</span><span class="v">Years later, in someone else's body.</span>
+        <span class="k">two feet</span><span class="v">A ceiling at 1.8 m. The breath gets short.</span>
+        <span class="k">four feet</span><span class="v">A ceiling at 6 m. The voice scatters.</span>
+        <span class="k">never given</span><span class="v">The ceiling the body wants. Found between the two.</span>
+        <span class="k">tools</span><span class="v"><span class="ch"><span class="on">study the relation</span><span class="off">drop the result</span></span><span class="vnote">The same software can be either.</span></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 6 -->
+<section class="stage" id="s6">
+  <div class="head"><span class="d tab">06</span><h2>What Should <span class="hi">Remain Difficult</span></h2></div>
+  <div class="ledger">
+    <div class="col-b txt">
+      <p>As someone who is interested in VR and wants to add multisensory experience to digital space, I want to ask myself a critical question. Adding senses to a digital space may be neither two feet nor four feet. It may only make the target easier to see. The throwing distance stays the same.</p>
+      <p>VR can remove resistance. It can also build resistance that the real world cannot. So the question is not the order or the kind of media. It is which resistance to keep in this space, and which resistance to add.</p>
+      <p>Sennett's chapter has a second word next to resistance. Ambiguity. A beanbag has one target. A space does not. The relation between a ceiling and a voice, a window and an afternoon, never settles into one right answer. That ambiguity is not a defect of architecture. It is where people improvise, like the front steps that became a living room. Generate does not only remove the resistance. It flattens the ambiguity too, into one smooth, finished image.</p>
+      <p>What does it mean to teach architectural design? At least for me, better design education is designing the difficulties that students will meet. When, how much, and with what feedback.</p>
+      <p>Back to the throw. Varied is practice where someone designed the difficulty. Two and four were chosen to surround three. Specific is practice where the difficulty was left alone. Generate is practice where the difficulty was cleared away. I feel the tools of architecture education are moving from Specific to Generate. The direction I think we should take is from Specific to Varied.</p>
+      <p>Does the tool I make help students succeed more easily. Or does it help them learn to judge for themselves.</p>
+      <p class="ask">If a tool removes every difficulty, <span class="hi">what is left for the student to learn?</span></p>
+    </div>
+    <div class="col-m">
+      <div class="fl">Three hands</div>
+      <div class="meta">
+        <span class="k">varied</span><span class="v cap">The difficulty was designed. Two and four were chosen to surround three.</span>
+        <span class="k">specific</span><span class="v">The difficulty was left alone.</span>
+        <span class="k">generate</span><span class="v">The difficulty was cleared away.</span>
+        <span class="k">moving</span><span class="v">From Specific to Generate.</span>
+        <span class="k">should</span><span class="v cap">From Specific to Varied.</span>
+        <span class="k">keeps</span><span class="v"><span class="ch"><span class="on">resistance</span><span class="on">ambiguity</span></span><span class="vnote">Generate flattens both into one finished image.</span></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="foot">
+  <div class="cols">
+    <div>
+      <div class="fl">Text</div>
+      <ul>
+        <li>Daniel Hee Gyu Kim</li>
+        <li>Six sections and a throwing lab</li>
+        <li>A rehearsal, not a replication<span>8 practice throws, 5 test throws</span></li>
+      </ul>
+    </div>
+    <div>
+      <div class="fl">The study</div>
+      <ul>
+        <li>Kerr and Booth, 1978<span>64 children, twelve weeks</span></li>
+        <li>Specific, at three feet</li>
+        <li>Varied, at two and four feet</li>
+      </ul>
+    </div>
+    <div>
+      <div class="fl">References</div>
+      <ul>
+        <li>Kerr, R., and Booth, B.<span>Specific and varied practice of motor skill. Perceptual and Motor Skills, 46, 1978</span></li>
+        <li>David Pye<span>The Nature and Art of Workmanship, chapters 4 to 8, 1968</span></li>
+        <li>Richard Sennett<span>The Craftsman, chapter 8, Resistance and Ambiguity, 2008</span></li>
+        <li>Willey, C. R., and Liu, Z.<span>Long-term motor learning. Effects of varied and specific practice. Vision Research, 152, 2018</span></li>
+      </ul>
+    </div>
+    <div>
+      <div class="fl">Course</div>
+      <ul>
+        <li>Harvard GSD</li>
+        <li>ADV 9672</li>
+        <li>Artifact 05</li>
+      </ul>
+    </div>
+  </div>
+  <div class="legal">
+    <span>Never Practice at Three Feet</span>
+    <span>Harvard GSD, ADV 9672, Artifact 05</span>
+  </div>
+</footer>
+
+</main>
+
+<script>
+(function(){
+  var MAX_FT=6, TOL=0.25, PRACTICE_N=8, TEST_N=5, FT_PER_SEC=2; // hold 1.5 s for 3 ft
+  var $=function(id){return document.getElementById(id)};
+  var el={modes:Array.prototype.slice.call(document.querySelectorAll('.mode')),phase:$('phase'),counter:$('counter'),
+    target:$('target'),tlabel:$('tlabel'),bean:$('bean'),ring:$('ring'),mask:$('mask'),feedback:$('feedback'),
+    start:$('startbtn'),hold:$('holdbtn'),gen:$('genbtn'),test:$('testbtn'),reset:$('resetbtn'),record:$('record'),after:$('after'),
+    steps:Array.prototype.slice.call(document.querySelectorAll('#steps div')),cells:Array.prototype.slice.call(document.querySelectorAll('#matrix td')),studio:$('studio'),
+    barHand:$('bar-hand'),barPrac:$('bar-prac'),barTest:$('bar-test'),strip:$('strip')};
+  var S={mode:null,phase:'choose',practice:[],test:[],last:null,holding:false,t0:0};
+
+  // audio
+  var AC=null;
+  function ac(){ if(!AC){ try{ AC=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} } if(AC&&AC.state==='suspended'){AC.resume()} return AC; }
+  function sRelease(){ var c=ac(); if(!c) return; var n=c.sampleRate*0.12,b=c.createBuffer(1,n,c.sampleRate),d=b.getChannelData(0); for(var i=0;i<n;i++){d[i]=(Math.random()*2-1)*Math.pow(1-i/n,2)} var s=c.createBufferSource();s.buffer=b;var f=c.createBiquadFilter();f.type='lowpass';f.frequency.value=1800;var g=c.createGain();g.gain.value=0.25;s.connect(f);f.connect(g);g.connect(c.destination);s.start(); }
+  function sLand(hit){ var c=ac(); if(!c) return; var o=c.createOscillator(),g=c.createGain(); o.type='sine'; o.frequency.value=hit?660:220; g.gain.setValueAtTime(0.0001,c.currentTime); g.gain.exponentialRampToValueAtTime(0.3,c.currentTime+0.005); g.gain.exponentialRampToValueAtTime(0.0001,c.currentTime+0.12); o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+0.14); }
+
+  function pct(ft){return (ft/MAX_FT*100)+'%'}
+  function fmt(n){return n.toFixed(2)}
+  function targetNext(){ if(S.phase==='test'||S.phase==='await'||S.phase==='done') return 3; if(S.mode==='varied') return (S.practice.length%2===0)?2:4; return 3; }
+  function hit(r){return Math.abs(r.err)<=TOL}
+  function setStep(s){ el.steps.forEach(function(d){d.classList.toggle('on',d.dataset.step===s)}) }
+  function show(n,yes){ n.classList.toggle('hidden',!yes) }
+
+  function shot(force,landed,auto){
+    var t=targetNext(), r={target:t,force:force,landed:landed,err:landed-t,auto:!!auto};
+    if(S.phase==='practice'){ S.practice.push(r); if(S.practice.length>=PRACTICE_N) S.phase='await'; }
+    else if(S.phase==='test'){ S.test.push(r); if(S.test.length>=TEST_N) S.phase='done'; }
+    S.last=r; setStep('reflect'); render();
+  }
+
+  // hold & release. while you hold, the whole page goes to black, like the children who could not see the target
+  function startHold(e){
+    if(!(S.phase==='practice'&&S.mode!=='generate')&&S.phase!=='test') return;
+    if(S.holding) return; if(e&&e.type==='keydown'&&e.repeat) return;
+    if(e&&e.preventDefault) e.preventDefault();
+    ac(); S.holding=true; S.t0=performance.now();
+    el.mask.classList.add('on'); el.hold.classList.add('on'); el.hold.textContent='Release to throw'; setStep('throw');
+    document.documentElement.classList.add('inside');
+    el.bean.style.display='none';
+    if(e&&e.pointerId!==undefined){ try{ el.hold.setPointerCapture(e.pointerId) }catch(x){} }
+  }
+  function endHold(e){
+    if(!S.holding) return; if(e&&e.preventDefault) e.preventDefault();
+    var sec=(performance.now()-S.t0)/1000; S.holding=false;
+    var force=Math.min(1,sec*FT_PER_SEC/MAX_FT);
+    var dist=Math.max(0,Math.min(MAX_FT, sec*FT_PER_SEC + (Math.random()-.5)*0.08));
+    el.hold.classList.remove('on'); el.hold.textContent='Hold, then release';
+    document.documentElement.classList.remove('inside');
+    sRelease();
+    setTimeout(function(){ el.mask.classList.remove('on'); sLand(Math.abs(dist-targetNext())<=TOL); shot(force,dist,false); },380);
+  }
+  el.hold.addEventListener('pointerdown',startHold); el.hold.addEventListener('pointerup',endHold); el.hold.addEventListener('pointercancel',endHold); el.hold.addEventListener('lostpointercapture',endHold);
+  el.hold.addEventListener('keydown',function(e){ if(e.code==='Space'||e.code==='Enter') startHold(e) });
+  el.hold.addEventListener('keyup',function(e){ if(e.code==='Space'||e.code==='Enter') endHold(e) });
+
+  // generate. perfect, every time. the only thing that moves is a ring.
+  el.gen.addEventListener('click',function(){
+    if(S.phase!=='practice'||S.mode!=='generate') return;
+    ac(); el.ring.classList.remove('go'); void el.ring.offsetWidth; el.ring.style.left=pct(3); el.ring.classList.add('go');
+    sLand(true); shot(null,3,true);
+  });
+
+  el.modes.forEach(function(b){ b.addEventListener('click',function(){ if(S.phase!=='choose') return; S.mode=b.dataset.mode; S.phase='ready'; render(); }) });
+  el.start.addEventListener('click',function(){ S.phase='practice'; S.last=null; setStep('observe'); render(); });
+  el.test.addEventListener('click',function(){ S.phase='test'; S.last=null; setStep('observe'); render(); el.feedback.scrollIntoView({behavior:'smooth',block:'center'}); });
+  el.reset.addEventListener('click',function(){ S={mode:null,phase:'choose',practice:[],test:[],last:null,holding:false,t0:0}; setStep(null); render(); $('lab').scrollIntoView({behavior:'smooth',block:'start'}); });
+
+  // the two Throw buttons go to the lab
+  function toLab(){ $('lab').scrollIntoView({behavior:'smooth',block:'start'}); }
+  $('bar-throw').addEventListener('click',toLab); $('hero-throw').addEventListener('click',toLab);
+
+  function cell(r){ return '<div class="cell '+(hit(r)?'hit':'')+(r.auto?' auto':'')+'" title="target '+r.target+' ft, landed '+fmt(r.landed)+' ft"><b>'+(r.auto?'auto':((r.err>=0?'+':'')+fmt(r.err)))+'</b>'+r.target+'′</div>' }
+
+  function render(){
+    var m=S.mode, p=S.phase, t=targetNext();
+    el.modes.forEach(function(b){ b.setAttribute('aria-pressed',String(b.dataset.mode===m)); b.disabled=!(p==='choose'||p==='ready'); });
+    show(el.start,p==='ready'); show(el.hold,(p==='practice'&&m!=='generate')||p==='test'); show(el.gen,p==='practice'&&m==='generate'); show(el.test,p==='await'); show(el.reset,p==='done'||p==='await');
+    show(el.after,p==='done');
+    el.target.style.left=pct(t); el.tlabel.textContent=t+'′';
+    var label={choose:'Choose a hand',ready:'Ready',practice:'Practice',await:'Practice done',test:'Test',done:'Test done'}[p];
+    el.phase.innerHTML=label+(m?' &nbsp;·&nbsp; <b>'+m+'</b>':'');
+    el.counter.innerHTML=(p==='test'||p==='done')?'Test <b>'+S.test.length+'</b> / '+TEST_N:(p==='practice'||p==='await')?'Practice <b>'+S.practice.length+'</b> / '+PRACTICE_N:'';
+
+    // the bar follows the lab
+    el.barHand.textContent=m||'—';
+    el.barPrac.textContent=S.practice.length+' / '+PRACTICE_N;
+    el.barTest.textContent=S.test.length+' / '+TEST_N;
+
+    // bean + feedback
+    var L=S.last;
+    if(L){ el.bean.style.display='block'; el.bean.style.left=pct(L.landed); el.bean.classList.toggle('ghost',false);
+      if(L.auto) el.feedback.innerHTML='<b>Perfect. 3.00′.</b> You did not throw.';
+      else el.feedback.innerHTML='Landed <b>'+fmt(L.landed)+'′</b>. Target '+L.target+'′. Miss <b>'+(L.err>=0?'+':'')+fmt(L.err)+'′</b>. '+(hit(L)?'<b>Hit.</b>':'Miss.');
+    } else { el.bean.style.display='none';
+      el.feedback.innerHTML = p==='choose' ? 'Pick Specific, Varied, or Generate.'
+        : p==='ready' ? (m==='generate' ? 'Target <b>3′</b>. Press Generate eight times. The beanbag lands at three feet every time.' : 'Target <b>'+t+'′</b>. Look at the lane. When you hold, it goes dark. Release to throw.')
+        : p==='test' ? '<b>No generate. Throw.</b> Target <b>3′</b>. Five throws. The practice record is hidden.'
+        : 'Target <b>'+t+'′</b>.';
+    }
+    if(p==='await'){ el.feedback.innerHTML = m==='generate' ? '<b>Eight perfect landings. None of them were yours.</b> Now the button is gone. Throw.' : 'Eight throws done. Now the test. Target <b>3′</b>, five throws, by hand.'; }
+    if(p==='practice'&&!L){ el.feedback.innerHTML='Target <b>'+t+'′</b>. '+(m==='generate'?'Press Generate.':'Hold, then release.'); }
+    if(p==='practice'&&L&&m!=='generate'){ el.feedback.innerHTML+=' &nbsp;Next target <b>'+t+'′</b>.'; }
+
+    // record
+    if(p==='test'){ el.record.innerHTML='<h4>Record</h4><p>Practice record is hidden during the test.</p>'+(S.test.length?'<div class="cells" style="margin-top:10px">'+S.test.map(cell).join('')+'</div>':''); }
+    else if(p==='done'){
+      var mae=S.test.reduce(function(a,r){return a+Math.abs(r.err)},0)/S.test.length, hits=S.test.filter(hit).length;
+      var pm=S.practice.reduce(function(a,r){return a+Math.abs(r.err)},0)/S.practice.length, ph=S.practice.filter(hit).length;
+      el.record.innerHTML='<h4>Your test at three feet</h4><div class="stats"><div class="stat"><b>'+hits+' / '+TEST_N+'</b><span>hits</span></div><div class="stat"><b>'+fmt(mae)+'′</b><span>mean miss</span></div></div>'
+        +'<h4>Practice &nbsp;·&nbsp; <b>'+m+'</b> &nbsp;·&nbsp; '+ph+' / '+PRACTICE_N+' hits, mean miss '+fmt(pm)+'′</h4><div class="cells">'+S.practice.map(cell).join('')+'</div>'
+        +'<h4 style="margin-top:14px">Test</h4><div class="cells">'+S.test.map(cell).join('')+'</div>'
+        +'<p>This is what your hand did. Nothing in the code favors one hand. To compare, try another hand.</p>';
+    }
+    else if(S.practice.length){ el.record.innerHTML='<h4>Record &nbsp;·&nbsp; practice</h4><div class="cells">'+S.practice.map(cell).join('')+'</div><p>Each cell shows the miss in feet and the target. Auto means you did not throw.</p>'; }
+    else { el.record.innerHTML='<h4>Record</h4><p>Each throw leaves its target, where it landed, and how much it missed.</p>'; }
+
+    // matrix highlight
+    el.cells.forEach(function(c){ c.classList.toggle('you', (p==='done'||p==='await'||p==='test') && c.dataset.cell===m); });
+  }
+
+  // matrix hover
+  el.cells.forEach(function(c){
+    c.addEventListener('mouseenter',function(){ el.studio.innerHTML='<b>'+c.textContent.trim()+'.</b> '+c.dataset.studio; });
+    c.addEventListener('mouseleave',function(){ el.studio.textContent='Hover a box to see what it looks like in a design studio.'; });
+    c.addEventListener('click',function(){ el.studio.innerHTML='<b>'+c.textContent.trim()+'.</b> '+c.dataset.studio; });
+  });
+
+  // while the hero's own button is on screen, the bar's button steps back
+  if('IntersectionObserver' in window){
+    var topIO=new IntersectionObserver(function(es){ es.forEach(function(e){ el.strip.classList.toggle('athero',e.isIntersecting) }) },{threshold:0.5});
+    topIO.observe($('hero-throw'));
+  }
+
+  render();
+})();
+</script>
+</body>
+</html>
